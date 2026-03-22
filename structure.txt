@@ -1,0 +1,157 @@
+﻿AI STEM Karaoke Studio — Project Structure
+Last updated: 2026-03-01 (rev 2)
+==========================================
+
+ai-stem-karaoke-studio/
+├── app.py                        # Flask application entry point — all routes & API endpoints
+├── config.py                     # DevelopmentConfig / ProductionConfig / TestingConfig
+├── requirements.txt              # Python package dependencies (pinned versions)
+├── setup.py                      # Package setup / dev install helper
+├── settings.json                 # User-generated runtime settings (created on first save)
+├── structure.txt                 # This file — project layout reference
+├── important.txt                 # Developer notes and environment hints
+├── README.md                     # Project overview and quick-start guide
+│
+├── database/                     # Database layer (SQLite, currently unused in routes)
+│   ├── __init__.py
+│   └── db.py
+│
+├── services/                     # Business logic services
+│   ├── __init__.py
+│   ├── demucs_service.py         # Demucs stem separation (model cache, GPU detection, WAV export)
+│   ├── url_service.py            # YouTube / direct-URL audio download — returns (path, title) tuple
+│   │                             #   Fixed base filename 'yt_audio' (no title in path)
+│   │                             #   postprocessor_hooks + progress_hooks capture real output path
+│   │                             #   3-strategy fallback: hook → expected path → folder scan
+│   └── scoring_service.py        # Vocal performance scoring via librosa + mir_eval
+│                                 #   6 metrics: pitch, timing, tone, expression, consistency, breath
+│
+├── static/
+│   ├── css/
+│   │   └── style.css             # All styles: dark theme, responsive (4 breakpoints), components
+│   └── js/
+│       └── script.js             # Global JS: nav toggle, upload progress, tab switching, mobile menu
+│
+├── templates/
+│   ├── base.html                 # Base layout: meta, CSS links, navbar include, footer, JS block
+│   ├── home.html                 # Landing page: drag-and-drop upload + YouTube URL input
+│   ├── mixer.html                # Stem mixer: WaveSurfer waveforms, volume/mute/solo, export, save
+│   ├── karaoke.html              # Karaoke recorder: backing track, mic pipeline, lyrics, effects
+│   ├── compare.html              # Side-by-side comparison: original vs user recording
+│   ├── projects.html             # Projects gallery: grid/list view, search, sort, delete modal
+│   ├── settings.html             # Settings: 5 tabs (Audio, Processing, Appearance, Storage, Advanced)
+│   ├── index.html                # Legacy index (redirects to home)
+│   └── result.html               # Legacy upload result page
+│   │
+│   └── components/               # Reusable Jinja2 partials
+│       ├── navbar.html           # Top navigation bar (mobile hamburger menu)
+│       ├── upload_section.html   # File upload / URL input form
+│       ├── progress_bar.html     # Separation progress indicator
+│       ├── waveform_section.html # WaveSurfer.js waveform display area
+│       ├── master_controls.html  # Play/pause/stop/loop/tempo/pitch transport controls
+│       ├── stem_controls.html    # Per-stem volume/mute/solo/download cards
+│       ├── karaoke_controls.html # Karaoke mode toggle, vocal effects, presets (overlay panel)
+│       ├── recording_controls.html # Mic setup, gain, level meter, rec buttons, takes list
+│       ├── comparison_layout.html  # Dual waveform layout for compare page
+│       ├── ai_score_dashboard.html # Performance score gauges and feedback panel
+│       ├── projects_list.html    # Projects list component (used on home page sidebar)
+│       └── settings_panel.html   # Individual settings panel wrapper
+│
+├── projects/                     # All user projects (one folder per session)
+│   └── YYYYMMDD_HHMMSS/          # Project folder named by creation timestamp
+│       ├── metadata.json         # Project state: id, name, model, stems_folder, has_recording,
+│       │                         #   score, mix_settings, source_url (URL projects only)
+│       ├── original_<filename>   # Original uploaded audio file  (file-upload projects)
+│       ├── recording.webm        # User's recorded vocal take (saved after karaoke session)
+│       ├── downloads/            # URL-download projects only
+│       │   └── yt_audio.mp3      # Fixed filename — no YouTube title in path (avoids special chars)
+│       └── stems/
+│           └── <model>/          # e.g. htdemucs, htdemucs_ft, htdemucs_6s, mdx_extra
+│               └── <track_name>/ # Derived from audio filename (yt_audio for URL downloads)
+│                   ├── vocals.wav
+│                   ├── drums.wav
+│                   ├── bass.wav
+│                   └── other.wav
+│
+├── uploads/                      # Temporary upload landing zone (cleared by Clear Cache)
+│   └── .gitkeep
+│
+├── separated/                    # Legacy global separation output (kept for backwards compat)
+│   ├── .gitkeep
+│   └── htdemucs/
+│       └── <track_name>/
+│           ├── vocals.wav
+│           ├── drums.wav
+│           ├── bass.wav
+│           └── other.wav
+│
+├── recordings/                   # Legacy global recordings folder
+│
+└── venv/                         # Python virtual environment (not committed to git)
+
+==========================================
+KEY FILES QUICK REFERENCE
+==========================================
+
+app.py — Routes map
+  PAGE ROUTES
+    GET  /                              → home.html (upload page)
+    GET  /mixer/<project_id>            → mixer.html
+    GET  /karaoke/<project_id>          → karaoke.html
+    GET  /compare/<project_id>          → compare.html
+    GET  /projects                      → projects.html
+    GET  /settings                      → settings.html
+
+  API ROUTES
+    POST /upload                        → save file → run Demucs → create project → return redirect URL
+    POST /upload-url                    → download from YouTube/URL → run Demucs → return redirect URL
+                                          body: {url, model}  response: {success, redirect_url}
+    GET  /api/stems/<project_id>        → return {stem_name: file_url} dict for mixer/karaoke
+    GET  /api/project-requirements/<id> → {has_vocals, has_recording, vocal_url, recording_url}
+    GET  /api/projects                  → list all projects with stems dict injected (sorted newest-first)
+    GET  /api/projects/<id>             → get single project metadata
+    DEL  /api/projects/<id>             → delete project folder entirely
+    POST /api/projects/<id>/save-mix    → persist mixer volumes/mute/solo/tempo/pitch to metadata
+    POST /api/save-recording/<id>       → save microphone recording blob, set has_recording=true
+    POST /api/analyze-performance/<id>  → real librosa+mir_eval scoring; returns 6 metrics + overall
+    GET  /api/settings                  → return merged settings (defaults + settings.json)
+    POST /api/settings                  → persist settings to settings.json
+    GET  /api/storage-info              → disk usage stats for projects/ folder
+    POST /api/clear-cache               → wipe uploads/ and separated/ folders
+    GET  /files/<path>                  → serve any project file securely (stems, recordings)
+
+config.py — Environment configs
+  DevelopmentConfig  DEBUG=True, no HTTPS, local SQLite
+  ProductionConfig   DEBUG=False, requires SECRET_KEY env var
+  TestingConfig      Separate test DB, CSRF disabled
+
+services/demucs_service.py
+  separate_audio(file_path, model, output_folder) → stems_path
+  Module-level model cache prevents re-loading weights on every request
+  Supports: htdemucs, htdemucs_ft, htdemucs_6s, mdx_extra, mdx_extra_q
+
+services/url_service.py
+  download_from_url(url, output_folder) → (file_path, title)  ← tuple, NOT bare string
+  download_from_youtube()  uses fixed 'yt_audio' base name in outtmpl; captures real
+    output path via postprocessor_hooks + progress_hooks; 3-strategy fallback resolution
+  download_direct_audio()  direct HTTP download via requests
+  is_youtube_url(), get_video_info()  helpers
+
+services/scoring_service.py
+  analyze_vocal_accuracy(vocal_path, recording_path) → dict
+  Metrics (0-100): pitch_accuracy (pyin+mir_eval RPA), timing_accuracy (onset F-measure),
+    tone_quality (MFCC cosine sim), expression (RMS Pearson), consistency (chroma accuracy),
+    breath_control (pause-ratio similarity)
+  Falls back to _fallback_analysis() if librosa/mir_eval not installed
+
+settings.json (runtime, auto-created)
+  Keys: audio_output, audio_input, sample_rate, buffer_size, normalize_audio,
+        default_model, processing_quality, cpu_threads, use_gpu, auto_cleanup,
+        theme, accent_color, waveform_colors, show_animations, compact_mode,
+        max_storage, auto_delete_old, export_format, enable_debug, api_endpoint
+
+==========================================
+THIRD-PARTY CLIENT LIBRARIES (CDN, no install)
+==========================================
+  WaveSurfer.js v7    https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js
+  Font Awesome 6.4    https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
