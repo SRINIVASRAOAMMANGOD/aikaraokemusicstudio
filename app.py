@@ -78,6 +78,55 @@ def _prewarm_model():
 import threading
 threading.Thread(target=_prewarm_model, daemon=True).start()
 
+# Auto-cleanup old projects to stay within storage quota
+def _cleanup_old_projects():
+    """Delete projects older than 7 days to free up storage"""
+    try:
+        import shutil
+        from datetime import timedelta
+        
+        if not os.path.exists(PROJECTS_FOLDER):
+            return
+        
+        now = datetime.now()
+        deleted_count = 0
+        freed_mb = 0
+        
+        for project_id in os.listdir(PROJECTS_FOLDER):
+            project_folder = os.path.join(PROJECTS_FOLDER, project_id)
+            if not os.path.isdir(project_folder):
+                continue
+            
+            try:
+                # Load metadata to get creation time
+                metadata_file = os.path.join(project_folder, 'metadata.json')
+                if os.path.exists(metadata_file):
+                    with open(metadata_file, 'r') as f:
+                        metadata = json.load(f)
+                        created_at = datetime.fromisoformat(metadata.get('created_at', ''))
+                        age_days = (now - created_at).days
+                        
+                        # Delete if older than 7 days
+                        if age_days > 7:
+                            folder_size = sum(
+                                os.path.getsize(os.path.join(root, f))
+                                for root, dirs, files in os.walk(project_folder)
+                                for f in files
+                            )
+                            shutil.rmtree(project_folder)
+                            freed_mb += folder_size / (1024 * 1024)
+                            deleted_count += 1
+            except Exception as e:
+                print(f"[Cleanup] Error processing {project_id}: {e}")
+        
+        if deleted_count > 0:
+            print(f"[Cleanup] Deleted {deleted_count} old projects, freed {freed_mb:.1f} MB")
+    except Exception as e:
+        print(f"[Cleanup] Error: {e}")
+
+# Run cleanup on startup and periodically
+threading.Thread(target=_cleanup_old_projects, daemon=True).start()
+
 
 def allowed_file(filename):
     """Check if file extension is allowed"""
@@ -772,6 +821,21 @@ def internal_error(error):
     if request.path.startswith('/api/'):
         return jsonify({'success': False, 'error': 'Internal server error'}), 500
     return render_template('home.html'), 500
+
+
+# Periodic cleanup scheduler (runs every 4 hours)
+def _periodic_cleanup():
+    """Run cleanup tasks periodically"""
+    import time
+    while True:
+        try:
+            time.sleep(4 * 3600)  # Wait 4 hours
+            _cleanup_old_projects()
+        except Exception as e:
+            print(f"[Periodic Cleanup] Error: {e}")
+
+# Start periodic cleanup in background
+threading.Thread(target=_periodic_cleanup, daemon=True).start()
 
 
 if __name__ == '__main__':
