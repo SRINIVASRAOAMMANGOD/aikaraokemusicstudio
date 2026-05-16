@@ -143,6 +143,16 @@ def index():
     return render_template('home.html')
 
 
+@app.route('/health')
+def health():
+    """Health check endpoint for container orchestration (Docker, Kubernetes, etc.)"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'AI Karaoke Music Studio',
+        'timestamp': datetime.utcnow().isoformat()
+    }), 200
+
+
 @app.route('/mixer/<project_id>')
 def mixer(project_id):
     """Stem mixer page"""

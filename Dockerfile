@@ -1,46 +1,94 @@
-# Use official Python runtime as base image
+# ============================================================
+# Multi-stage build for optimized production image
+# ============================================================
+
+# Stage 1: Builder
+FROM python:3.11-slim as builder
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    libsndfile1-dev \
+    libsox-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip setuptools wheel && \
+    pip wheel --no-cache-dir --wheel-dir /build/wheels -r requirements.txt
+
+# ============================================================
+# Stage 2: Runtime
+# ============================================================
+
 FROM python:3.11-slim
+
+LABEL maintainer="AI Karaoke Music Studio"
+LABEL description="Production-ready AI Karaoke Music Studio with stem separation"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    FLASK_APP=app.py
+    FLASK_APP=app.py \
+    FLASK_ENV=production \
+    PATH="/venv/bin:$PATH"
 
-# Install system dependencies required for audio processing and PyTorch
+# Install runtime dependencies only (no build tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
     libsndfile1 \
-    libsndfile1-dev \
     sox \
-    libsox-dev \
     ffmpeg \
-    git \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Set work directory
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app /app/uploads /app/projects && \
+    chown -R appuser:appuser /app
+
 WORKDIR /app
 
-# Copy requirements first (for better layer caching)
-COPY requirements.txt .
+# Copy wheels from builder stage
+COPY --from=builder /build/wheels /wheels
 
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install -r requirements.txt
+# Install Python dependencies from wheels
+RUN pip install --upgrade pip setuptools && \
+    pip install --no-cache /wheels/* && \
+    rm -rf /wheels
 
 # Copy application code
-COPY . .
+COPY --chown=appuser:appuser . .
 
-# Create necessary directories for uploads and projects
-RUN mkdir -p uploads projects
+# Switch to non-root user
+USER appuser
 
-# Expose port (Flask default is 5000, gunicorn will use this)
+# Expose port
 EXPOSE 5000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
 
-# Run the application with gunicorn
-CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+# Run with gunicorn (production WSGI server)
+# Workers = (2 × CPU cores) + 1 for typical servers (adjust for your hardware)
+CMD ["gunicorn", \
+     "--workers", "4", \
+     "--worker-class", "sync", \
+     "--worker-connections", "1000", \
+     "--bind", "0.0.0.0:5000", \
+     "--timeout", "120", \
+     "--graceful-timeout", "30", \
+     "--keep-alive", "5", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "--log-level", "info", \
+     "app:app"]

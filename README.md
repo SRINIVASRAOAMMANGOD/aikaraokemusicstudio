@@ -206,6 +206,123 @@ http://127.0.0.1:5000
 
 ---
 
+## 🚀 Production Deployment
+
+### Docker Deployment (Recommended)
+
+For production environments, use Docker with the provided production-ready Dockerfile:
+
+```bash
+# Build image
+docker build -t aikaraoke:latest .
+
+# Generate secure SECRET_KEY
+export SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+
+# Run with Docker Compose
+docker-compose up -d
+```
+
+### Access Points
+
+- **Application**: http://yourdomain.com (HTTPS recommended)
+- **Health Check**: http://yourdomain.com/health
+- **API**: http://yourdomain.com/api/*
+
+### Production Features
+
+✅ **Security**
+- Non-root user execution
+- SSL/TLS support with Nginx
+- Environment variable configuration
+- Secret key validation
+
+✅ **Performance**
+- Multi-stage Docker build
+- Optimized gunicorn configuration
+- Health check monitoring
+- Resource limits
+
+✅ **Operations**
+- Automatic container restart
+- Persistent volume management
+- Structured logging
+- Docker Compose orchestration
+
+### Deployment Documentation
+
+See detailed deployment guides:
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Comprehensive production deployment guide
+- **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment checklist
+- **[docker-compose.yml](docker-compose.yml)** - Production Docker Compose configuration
+- **[nginx.conf](nginx.conf)** - Nginx reverse proxy configuration
+- **[.env.example](.env.example)** - Environment variables template
+
+### Quick Production Deploy
+
+```bash
+# 1. Clone repository
+git clone <your-repo> aikaraoke
+cd aikaraoke
+
+# 2. Set up environment
+export SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+cp .env.example .env
+# Edit .env with your configuration
+
+# 3. Create data directories
+mkdir -p uploads projects logs
+
+# 4. Deploy
+docker-compose up -d
+
+# 5. Verify health
+curl http://localhost:5000/health
+```
+
+### SSL/HTTPS Setup
+
+```bash
+# Using Let's Encrypt + Certbot
+mkdir -p ssl
+certbot certonly --standalone -d yourdomain.com
+
+# Copy certificates
+cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem ssl/cert.pem
+cp /etc/letsencrypt/live/yourdomain.com/privkey.pem ssl/key.pem
+
+# Restart services with Nginx
+docker-compose down
+docker-compose up -d
+```
+
+### Monitoring
+
+```bash
+# View logs
+docker-compose logs -f web
+
+# Check health
+docker-compose exec web curl http://localhost:5000/health
+
+# Monitor resources
+docker stats aikaraoke-studio
+```
+
+### Backup Strategy
+
+```bash
+# Backup projects
+tar -czf backup-$(date +%Y%m%d).tar.gz projects/
+
+# Automated daily backup (cron)
+0 2 * * * tar -czf /backups/aikaraoke-$(date +\%Y\%m\%d).tar.gz /path/to/projects/
+```
+
+For comprehensive deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+---
+
 ## 🎮 Usage Guide
 
 ### Upload Audio
