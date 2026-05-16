@@ -4,3 +4,31 @@ __pycache__/
 uploads/*
 !uploads/.gitkeep
 
+# Environment files (contain secrets)
+
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.db-journal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Projects (runtime generated)
+projects/*
+!projects/.gitkeep
+
+# Settings
+settings.json
+
