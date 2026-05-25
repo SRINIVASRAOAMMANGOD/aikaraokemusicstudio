@@ -1,10 +1,20 @@
+---
+title: AI Karaoke Studio
+emoji: 🎤
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🎵 AI-Powered STEM Karaoke Studio
 
 A comprehensive web-based AI music processing platform that performs automatic audio stem separation, provides interactive karaoke features, real-time vocal recording, and AI-powered performance analysis.
 
----
+Built with **Flask**, **PyTorch**, **Demucs**, and deployed on **Hugging Face Spaces**.
 
-## USE Python 3.11.xx Version
+**Python 3.11 Required**
 
 ---
 
@@ -63,7 +73,52 @@ Users can:
 
 ---
 
-## 🏗️ System Architecture
+## ⚡ Quick Start (HF Spaces)
+
+This app is **live and ready to use!** No installation needed.
+
+### How to Use
+
+1. **Upload Audio**
+   - Click "Upload Audio" and select an MP3, WAV, FLAC, OGG, M4A, or AAC file
+   - Or paste a YouTube URL/direct audio link
+   - Max file size: 50MB
+
+2. **Wait for Stem Separation**
+   - First upload: ~30-60 seconds (downloads AI model)
+   - Subsequent uploads: ~30-40 seconds (model cached)
+
+3. **Mix Stems**
+   - Use sliders to adjust volume for each stem
+   - Pan, solo, or mute individual tracks
+
+4. **Record Karaoke** (optional)
+   - Click "Record" to sing along
+   - Play backing track
+   - Record your vocals
+
+5. **Get AI Score** (optional)
+   - Compare your recording with original
+   - Get pitch, timing, tone analysis
+   - Track improvement over time
+
+---
+
+## 🚀 Deployment
+
+**Status**: ✅ **Live on Hugging Face Spaces**
+
+This app is deployed on [Hugging Face Spaces](https://huggingface.co/spaces/WEBSITEMAN/ai-karaoke-studio) with:
+- Free hosting (no credit card needed)
+- Automatic scaling
+- GPU acceleration available
+- Always-on availability
+
+For deployment instructions, see: [`HF_SPACES_DEPLOYMENT.md`](./HF_SPACES_DEPLOYMENT.md)
+
+---
+
+## 🔧 Installation (Local Development)
 
 ```
 User Interface (Flask Templates)
@@ -415,6 +470,35 @@ See `requirements.txt` for full list:
 - requests
 - werkzeug
 
+## 🔐 Environment Variables
+
+Create a `.env` file based on `.env.example`:
+
+```bash
+# Flask Configuration
+FLASK_ENV=production
+SECRET_KEY=your-secure-32-character-random-key
+
+# AI Model
+DEMUCS_MODEL=htdemucs
+TORCH_NUM_THREADS=4
+
+# Storage
+UPLOAD_FOLDER=uploads
+DATABASE_FILE=karaoke_studio.db
+
+# Features
+ENABLE_YOUTUBE_DOWNLOAD=true
+ENABLE_AI_ANALYSIS=true
+
+# Logging
+LOG_LEVEL=info
+```
+
+**For HF Spaces**: Use "Repository secrets" in Space settings instead of .env file.
+
+See [.env.example](.env.example) for complete configuration options.
+
 ---
 
 ## 🐛 Troubleshooting
@@ -442,6 +526,50 @@ python -c "from database.db import init_db; init_db()"
 [Your License Here]
 
 ---
+
+## 📚 Documentation
+
+- **[START_HERE.md](START_HERE.md)** - Quick start guide for deployment
+- **[HF_SPACES_DEPLOYMENT.md](HF_SPACES_DEPLOYMENT.md)** - Complete HF Spaces deployment guide (70+ sections)
+- **[HF_SPACES_CHECKLIST.md](HF_SPACES_CHECKLIST.md)** - Deployment verification checklist
+- **[DEPLOYMENT_QUICK_REFERENCE.md](DEPLOYMENT_QUICK_REFERENCE.md)** - Quick reference card
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - General production deployment guide
+- **[.env.example](.env.example)** - Environment variables template
+
+---
+
+## 💬 Support
+
+- **Issues**: [GitHub Issues](https://github.com/WEBSITEMAN/ai-karaoke-studio/issues)
+- **HF Spaces**: [Live Demo](https://huggingface.co/spaces/WEBSITEMAN/ai-karaoke-studio)
+- **Documentation**: See deployment guides above
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+---
+
+## 🎓 Credits
+
+- **Demucs**: [Meta AI](https://github.com/facebookresearch/demucs)
+- **Flask**: [Pallets](https://flask.palletsprojects.com/)
+- **PyTorch**: [Meta AI](https://pytorch.org/)
+- **Librosa**: [Brain](https://librosa.org/)
+- **Hosting**: [Hugging Face Spaces](https://huggingface.co/spaces)
+
+---
+
+**Status**: ✅ **Live and Ready**
+**Platform**: Hugging Face Spaces
+**Last Updated**: 2026-05-25
 
 ## 👥 Contributors
 
