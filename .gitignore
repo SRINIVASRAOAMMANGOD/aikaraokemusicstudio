@@ -32,3 +32,4 @@ projects/*
 # Settings
 settings.json
 
+.env
