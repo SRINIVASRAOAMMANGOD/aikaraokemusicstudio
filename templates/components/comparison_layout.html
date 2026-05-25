@@ -1,0 +1,87 @@
+﻿<section class="cmp-section" id="comparison-section" style="display:none">
+    <div class="cmp-card">
+        <div class="cmp-card__header">
+            <h3><i class="fas fa-compress-arrows-alt"></i> Waveform Comparison</h3>
+            <button class="sda-btn sda-btn--secondary" id="export-comparison-btn">
+                <i class="fas fa-file-export"></i><span>Export</span>
+            </button>
+        </div>
+
+        <div id="comparison-content" style="display:none">
+
+            <!-- Dual waveform -->
+            <div class="cmp-waves">
+                <div class="cmp-wave-panel cmp-wave-panel--orig">
+                    <div class="cmp-wave-label">
+                        <span class="cmp-dot cmp-dot--orig"></span> Original Vocals
+                        <button class="cmp-play-inline play-original"><i class="fas fa-play"></i></button>
+                    </div>
+                    <div id="comparison-wave-original" class="cmp-wave-host"></div>
+                </div>
+                <div class="cmp-wave-panel cmp-wave-panel--rec">
+                    <div class="cmp-wave-label">
+                        <span class="cmp-dot cmp-dot--rec"></span> Your Recording
+                        <button class="cmp-play-inline play-recording"><i class="fas fa-play"></i></button>
+                    </div>
+                    <div id="comparison-wave-recording" class="cmp-wave-host"></div>
+                </div>
+            </div>
+
+            <!-- Transport + mode -->
+            <div class="cmp-controls">
+                <div class="cmp-mode-btns">
+                    <button class="cmp-mode active" data-mode="original">Original</button>
+                    <button class="cmp-mode" data-mode="recording">Recording</button>
+                    <button class="cmp-mode" data-mode="both">Both</button>
+                    <button class="cmp-mode" data-mode="switch">A/B</button>
+                </div>
+                <div class="cmp-transport">
+                    <button class="cmp-ctrl" id="comp-play-btn"  title="Play"><i class="fas fa-play"></i></button>
+                    <button class="cmp-ctrl" id="comp-pause-btn" title="Pause"><i class="fas fa-pause"></i></button>
+                    <button class="cmp-ctrl" id="comp-stop-btn"  title="Stop"><i class="fas fa-stop"></i></button>
+                    <button class="cmp-ctrl" id="comp-sync-btn"  title="Sync position"><i class="fas fa-link"></i></button>
+                </div>
+            </div>
+
+            <!-- Spectrograms -->
+            <div class="cmp-spectro">
+                <div class="cmp-spectro__title"><i class="fas fa-wave-square"></i> Spectral Analysis</div>
+                <div class="cmp-spectro__grid">
+                    <div class="cmp-spectro__panel">
+                        <span>Original</span>
+                        <canvas id="spectrogram-original" height="110"></canvas>
+                    </div>
+                    <div class="cmp-spectro__panel">
+                        <span>Recording</span>
+                        <canvas id="spectrogram-recording" height="110"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric bars (populated by JS after analysis) -->
+            <div class="cmp-stat-row">
+                <div class="cmp-stat">
+                    <span class="cmp-stat__label"><i class="fas fa-music"></i> Pitch Accuracy</span>
+                    <div class="cmp-stat__bar"><div class="cmp-stat__fill" id="pitch-accuracy"></div></div>
+                    <span class="cmp-stat__val" id="pitch-stat-value">—</span>
+                </div>
+                <div class="cmp-stat">
+                    <span class="cmp-stat__label"><i class="fas fa-clock"></i> Timing</span>
+                    <div class="cmp-stat__bar"><div class="cmp-stat__fill" id="timing-accuracy"></div></div>
+                    <span class="cmp-stat__val" id="timing-stat-value">—</span>
+                </div>
+                <div class="cmp-stat">
+                    <span class="cmp-stat__label"><i class="fas fa-volume-up"></i> Tone Quality</span>
+                    <div class="cmp-stat__bar"><div class="cmp-stat__fill" id="tone-accuracy"></div></div>
+                    <span class="cmp-stat__val" id="tone-stat-value">—</span>
+                </div>
+                <div class="cmp-stat">
+                    <span class="cmp-stat__label"><i class="fas fa-wind"></i> Breath Control</span>
+                    <div class="cmp-stat__bar"><div class="cmp-stat__fill" id="breath-accuracy"></div></div>
+                    <span class="cmp-stat__val" id="breath-stat-value">—</span>
+                </div>
+            </div>
+
+        </div><!-- /comparison-content -->
+    </div>
+</section>
