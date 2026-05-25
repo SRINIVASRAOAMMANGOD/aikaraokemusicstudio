@@ -71,20 +71,20 @@ COPY --chown=appuser:appuser . .
 # Switch to non-root user
 USER appuser
 
-# Expose port
-EXPOSE 5000
+# Expose port (7860 for HF Spaces, 5000 for local development)
+EXPOSE 7860
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:7860/health || exit 1
 
 # Run with gunicorn (production WSGI server)
-# Workers = (2 × CPU cores) + 1 for typical servers (adjust for your hardware)
+# For HF Spaces: 2 workers, reduced connections due to shared resources
 CMD ["gunicorn", \
-     "--workers", "4", \
+     "--workers", "2", \
      "--worker-class", "sync", \
-     "--worker-connections", "1000", \
-     "--bind", "0.0.0.0:5000", \
+     "--worker-connections", "500", \
+     "--bind", "0.0.0.0:7860", \
      "--timeout", "120", \
      "--graceful-timeout", "30", \
      "--keep-alive", "5", \
