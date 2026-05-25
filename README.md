@@ -77,6 +77,8 @@ Users can:
 
 This app is **live and ready to use!** No installation needed.
 
+Live site: https://srinivashugfacinging-ai-karaoke-studio.hf.space/
+
 ### How to Use
 
 1. **Upload Audio**
@@ -107,6 +109,8 @@ This app is **live and ready to use!** No installation needed.
 ## 🚀 Deployment
 
 **Status**: ✅ **Live on Hugging Face Spaces**
+
+Live site: https://srinivashugfacinging-ai-karaoke-studio.hf.space/
 
 This app is deployed on [Hugging Face Spaces](https://huggingface.co/spaces/WEBSITEMAN/ai-karaoke-studio) with:
 - Free hosting (no credit card needed)
