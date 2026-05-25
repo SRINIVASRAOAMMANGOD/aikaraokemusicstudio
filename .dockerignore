@@ -7,10 +7,14 @@ env/
 venv/
 .venv
 .env
-.git
+.env.local
+.env.example
+.git/
 .gitignore
+.gitattributes
+.github/
 .DS_Store
-.pytest_cache
+.pytest_cache/
 .coverage
 htmlcov/
 dist/
@@ -18,12 +22,32 @@ build/
 *.egg-info/
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
 node_modules/
 uploads/
 projects/
+logs/
 *.log
+*.db
+test_*.db
 .dockerignore
-Dockerfile
 docker-compose.yml
-.github/
-README.md
+nginx.conf
+Procfile
+requirements-pythonanywhere.txt
+
+# Documentation (optional - uncomment if you want to include)
+# README.md
+# *.md
+# docs/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+
+# Tests (optional - uncomment if you want to include)
+# tests/
+# test_*.py
+# *_test.py
