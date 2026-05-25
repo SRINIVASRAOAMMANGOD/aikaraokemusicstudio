@@ -70,7 +70,24 @@ Key sections:
   - Troubleshooting
 ```
 
-### 5. **.env.example** (ENVIRONMENT VARIABLES)
+### 5. **PRODUCTION_CHANGES_GUIDE.md** (UPDATES & MAINTENANCE) ⭐ NEW
+```
+Purpose: Complete guide for making changes and pushing to production
+When to read: After initial deployment - for ongoing updates
+Time to read: 15-20 minutes (comprehensive walkthrough)
+Key sections:
+  - Initial folder setup
+  - Adding GitHub remote
+  - Adding Hugging Face remote
+  - Daily development workflow
+  - Practical examples for common updates
+  - Branch management
+  - Deployment monitoring
+  - Troubleshooting
+  - Best practices
+```
+
+### 6. **.env.example** (ENVIRONMENT VARIABLES)
 ```
 Purpose: Template for environment variables
 When to use: Create .env for local testing, set secrets on HF
@@ -98,6 +115,11 @@ Changes made:
 2. Read: `HF_SPACES_DEPLOYMENT.md` - Quick Start section (5 min)
 3. Follow: `HF_SPACES_DEPLOYMENT.md` - Detailed Steps 1-9
 4. Use: `HF_SPACES_CHECKLIST.md` - for verification
+
+### I'm Ready to Make Changes & Updates (After First Deployment)
+1. Read: `PRODUCTION_CHANGES_GUIDE.md` (15-20 min)
+2. Follow: The workflow examples for your specific use case
+3. Use: The quick reference cheatsheet for daily updates
 
 ### I just want the QUICK VERSION
 1. Read: `DEPLOYMENT_QUICK_REFERENCE.md` (5 min)
@@ -148,6 +170,7 @@ DEPLOYMENT_READY_SUMMARY.md     - Overview (this folder)
 HF_SPACES_DEPLOYMENT.md         - Main guide (70+ sections)
 HF_SPACES_CHECKLIST.md          - Verification checklist
 DEPLOYMENT_QUICK_REFERENCE.md   - Quick lookup card
+PRODUCTION_CHANGES_GUIDE.md     - Updates & maintenance guide ⭐ NEW
 DEPLOYMENT_GUIDES_INDEX.md      - This file (navigation)
 ```
 
@@ -219,12 +242,16 @@ HF Space UI → Logs tab → Watch output
 3. `HF_SPACES_CHECKLIST.md` (5 min)
 4. `DEPLOYMENT_QUICK_REFERENCE.md` (5 min)
 
-### Deep Dive (60+ min)
-1. Read all 4 main guides thoroughly
+### After First Deployment (For Making Changes)
+1. `PRODUCTION_CHANGES_GUIDE.md` (15-20 min read)
+2. Use as reference for daily development and pushing updates
+
+### Deep Dive (90+ min)
+1. Read all 5 main guides thoroughly
 2. Review Dockerfile changes
 3. Review .env.example variables
-4. Check troubleshooting section
-5. Understand each step before deployment
+4. Check troubleshooting sections
+5. Understand deployment workflow and change management
 
 ---
 
@@ -233,11 +260,12 @@ HF Space UI → Logs tab → Watch output
 | Document | Type | Length | Focus |
 |----------|------|--------|-------|
 | DEPLOYMENT_READY_SUMMARY.md | Overview | ~300 lines | Current state & changes |
-| HF_SPACES_DEPLOYMENT.md | Guide | ~400 lines | Step-by-step | Troubleshooting |
+| HF_SPACES_DEPLOYMENT.md | Guide | ~400 lines | Step-by-step & Troubleshooting |
 | HF_SPACES_CHECKLIST.md | Checklist | ~150 lines | Verification |
 | DEPLOYMENT_QUICK_REFERENCE.md | Reference | ~200 lines | Quick lookup |
+| PRODUCTION_CHANGES_GUIDE.md | Guide | ~350 lines | Updates & maintenance ⭐ NEW |
 | **.env.example** | Config | ~100 lines | Variables |
-| **Total Documentation** | | ~1150 lines | Complete guide |
+| **Total Documentation** | | ~1500 lines | Complete guide |
 
 ---
 
@@ -279,15 +307,19 @@ By following these guides, you'll learn:
 
 ### Path A: "Just Tell Me What to Do"
 → Follow `DEPLOYMENT_QUICK_REFERENCE.md` step-by-step
+→ Then use `PRODUCTION_CHANGES_GUIDE.md` for updates
 
 ### Path B: "I Want to Understand Everything"
 → Read `HF_SPACES_DEPLOYMENT.md` section by section
+→ Then study `PRODUCTION_CHANGES_GUIDE.md` for workflow
 
 ### Path C: "I'm Experienced, Just Give Me the Essentials"
 → Check `.env.example` and Dockerfile, then deploy
+→ Refer to `PRODUCTION_CHANGES_GUIDE.md` for update workflow
 
 ### Path D: "I Want to Verify Everything"
-→ Use `HF_SPACES_CHECKLIST.md` as your guide
+→ Use `HF_SPACES_CHECKLIST.md` as your deployment guide
+→ Use `PRODUCTION_CHANGES_GUIDE.md` for testing updates
 
 ---
 
