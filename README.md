@@ -122,7 +122,55 @@ For deployment instructions, see: [`HF_SPACES_DEPLOYMENT.md`](./HF_SPACES_DEPLOY
 
 ---
 
-## 🔧 Installation (Local Development)
+## � Storage Architecture
+
+### Ephemeral Storage Design (One-Time Use Pattern)
+
+This application is designed as a **stateless, one-time use** web service. Here's why uploaded files and project folders are not visible in Hugging Face Spaces:
+
+#### **By Design: Session-Based Processing**
+- **Uploads folder** and **projects folder** are created **dynamically at runtime** in memory/temporary storage
+- Files are **not persisted** between sessions by default
+- When a space restarts or session ends, temporary files are automatically cleaned up
+- This is intentional for a **karaoke practice/recording tool** where users don't need long-term storage
+
+#### **Why This Approach?**
+1. **Storage Efficiency**: No accumulation of old audio files
+2. **Privacy**: User recordings/uploaded music are not permanently stored
+3. **One-Time Use**: Users upload → process → download/use → done
+4. **Zero Maintenance**: Automatic cleanup, no manual file management needed
+5. **Cost Optimization**: Minimizes HF Spaces storage quota usage (stays at 0MB)
+
+#### **How It Works**
+- User uploads audio → saved to temporary `uploads/` folder
+- App processes with Demucs → saves stems to `projects/{project_id}/stems/`
+- User downloads/uses files in browser session
+- On next space restart → all temporary files are cleared
+- Fresh space for next user
+
+#### **If Persistent Storage Were Needed**
+To make files persist in HF Spaces (for multi-session use cases), we would:
+```python
+# Use HF Spaces persistent storage
+UPLOAD_FOLDER = '/data/uploads'
+PROJECTS_FOLDER = '/data/projects'
+```
+This would require:
+- Storage quota on HF Spaces
+- Auto-cleanup policies to manage disk space
+- Database indexing for file retrieval
+- Not needed for current one-time use design
+
+#### **Key Insight for Interviews**
+✅ This is a **design choice**, not a limitation:
+- Prioritizes user privacy and clean resource usage
+- Optimized for stateless cloud deployment (HF Spaces, Docker, Kubernetes)
+- Typical pattern for ML inference services and batch processing tools
+- Can be modified to use persistent storage if requirements change
+
+---
+
+## �🔧 Installation (Local Development)
 
 ```
 User Interface (Flask Templates)
