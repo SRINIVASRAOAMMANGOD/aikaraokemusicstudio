@@ -16,6 +16,8 @@ Built with **Flask**, **PyTorch**, **Demucs**, and deployed on **Hugging Face Sp
 
 **Python 3.11 Required**
 
+Also refer : [ai-stem-karaoke-studio]([https://huggingface.co/spaces](https://github.com/SRINIVASRAOAMMANGOD/ai-stem-karaoke-studio)) 
+
 ---
 
 ## 🚀 Project Overview
@@ -623,9 +625,6 @@ Contributions are welcome! Please:
 **Platform**: Hugging Face Spaces
 **Last Updated**: 2026-05-25
 
-## 👥 Contributors
-
-[Your Name/Team]
 
 ---
 
