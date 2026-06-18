@@ -3,6 +3,98 @@ import torch
 import torchaudio
 
 # ---------------------------------------------------------------------------
+# Robust audio loader — works on Windows without FFmpeg DLLs.
+# torchaudio 2.10.0 changed its default backend to torchcodec which requires
+# FFmpeg full-shared DLLs. We bypass this by using soundfile directly.
+# ---------------------------------------------------------------------------
+
+def _load_audio(file_path: str):
+    """
+    Load audio file returning (waveform_tensor [channels, samples], sample_rate).
+
+    Backend selection:
+      - MP3/M4A/AAC/WEBM  →  pydub (calls system ffmpeg binary, no DLL issues)
+      - WAV/FLAC/OGG/AIFF →  soundfile (fast, pure-Python, no ffmpeg needed)
+      - Fallback           →  torchaudio with explicit soundfile backend
+
+    This completely avoids torchaudio 2.10.0's new default torchcodec backend
+    which requires FFmpeg full-shared DLLs on Windows.
+    """
+    import os
+    ext = os.path.splitext(file_path)[1].lower()
+
+    # --- MP3 / compressed formats: use pydub → ffmpeg binary ---
+    if ext in ('.mp3', '.m4a', '.aac', '.webm', '.opus', '.wma', '.ogg'):
+        try:
+            from pydub import AudioSegment
+            import numpy as np
+            audio = AudioSegment.from_file(file_path)
+            sr = audio.frame_rate
+            samples = np.array(audio.get_array_of_samples(), dtype=np.float32)
+            # Normalize to [-1.0, 1.0]
+            samples /= float(1 << (audio.sample_width * 8 - 1))
+            channels = audio.channels
+            if channels > 1:
+                samples = samples.reshape(-1, channels).T
+            else:
+                samples = samples.reshape(1, -1)
+            wav = torch.from_numpy(samples)
+            print(f"[Audio] Loaded via pydub — sr={sr}, shape={wav.shape}")
+            return wav, sr
+        except Exception as e_pydub:
+            print(f"[Audio] pydub failed ({e_pydub}), trying soundfile fallback…")
+
+    # --- WAV / FLAC / uncompressed: use soundfile ---
+    try:
+        import soundfile as sf
+        import numpy as np
+        data, sr = sf.read(file_path, dtype='float32', always_2d=True)
+        # soundfile: (samples, channels) → torchaudio: (channels, samples)
+        wav = torch.from_numpy(data.T)
+        print(f"[Audio] Loaded via soundfile — sr={sr}, shape={wav.shape}")
+        return wav, sr
+    except Exception as e_sf:
+        print(f"[Audio] soundfile failed ({e_sf}), trying torchaudio soundfile backend…")
+
+    # --- Last resort: torchaudio with explicit soundfile backend ---
+    try:
+        wav, sr = torchaudio.load(file_path, backend="soundfile")
+        print(f"[Audio] Loaded via torchaudio(soundfile) — sr={sr}, shape={wav.shape}")
+        return wav, sr
+    except Exception as e_ta:
+        raise RuntimeError(
+            f"Could not load audio '{file_path}'. All backends failed.\n"
+            f"  pydub/ffmpeg: see above\n"
+            f"  soundfile: {e_sf}\n"
+            f"  torchaudio/soundfile: {e_ta}"
+        )
+
+
+def _save_audio(file_path: str, tensor: torch.Tensor, sample_rate: int):
+    """
+    Save audio tensor [channels, samples] to file_path.
+    Uses soundfile directly (avoiding torchaudio's default torchcodec backend).
+    """
+    try:
+        import soundfile as sf
+        # soundfile expects (samples, channels)
+        data = tensor.detach().cpu().numpy().T
+        sf.write(file_path, data, sample_rate)
+        print(f"[Audio] Saved via soundfile: {file_path}")
+    except Exception as e:
+        print(f"[Audio] soundfile save failed ({e}), trying torchaudio soundfile backend…")
+        try:
+            torchaudio.save(file_path, tensor, sample_rate, backend="soundfile")
+            print(f"[Audio] Saved via torchaudio(soundfile): {file_path}")
+        except Exception as e_ta:
+            raise RuntimeError(
+                f"Could not save audio '{file_path}'. All backends failed.\n"
+                f"  soundfile: {e}\n"
+                f"  torchaudio/soundfile: {e_ta}"
+            )
+
+
+# ---------------------------------------------------------------------------
 # Module-level model cache  { model_name: demucs_model }
 # The model is loaded the first time it is requested, then kept in memory so
 # subsequent calls reuse the same weights without any re-loading overhead.
@@ -75,7 +167,7 @@ def separate_audio(file_path, model='htdemucs', output_folder='separated', two_s
         from demucs.audio import convert_audio
         from demucs.apply import apply_model
 
-        wav, sr = torchaudio.load(file_path)
+        wav, sr = _load_audio(file_path)
         wav = convert_audio(wav, sr, demucs_model.samplerate, demucs_model.audio_channels)
         wav = wav.to(device)
 
@@ -106,7 +198,7 @@ def separate_audio(file_path, model='htdemucs', output_folder='separated', two_s
                     continue   # skip individual non-target stems
 
                 out_path = os.path.join(stems_path, out_name)
-                torchaudio.save(out_path, source, demucs_model.samplerate)
+                _save_audio(out_path, source, demucs_model.samplerate)
                 print(f"[Demucs] Saved {out_name}")
 
             # Build the combined remainder track
@@ -115,12 +207,12 @@ def separate_audio(file_path, model='htdemucs', output_folder='separated', two_s
                 if others:
                     combined = torch.stack(others).sum(dim=0)
                     no_stem_path = os.path.join(stems_path, f"no_{two_stems}.wav")
-                    torchaudio.save(no_stem_path, combined, demucs_model.samplerate)
+                    _save_audio(no_stem_path, combined, demucs_model.samplerate)
                     print(f"[Demucs] Saved no_{two_stems}.wav")
         else:
             for name, source in zip(stem_names, sources):
                 out_path = os.path.join(stems_path, f"{name}.wav")
-                torchaudio.save(out_path, source, demucs_model.samplerate)
+                _save_audio(out_path, source, demucs_model.samplerate)
                 print(f"[Demucs] Saved {name}.wav")
 
         print(f"[Demucs] Separation complete — stems in: {stems_path}")
